@@ -17,6 +17,9 @@ class FoodItem(models.Model):
     fats = models.FloatField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     is_available = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('category', 'name')
     
     def __str__(self):
         return self.name
@@ -46,7 +49,7 @@ class Order(models.Model):
         return f"Order {self.id}"
     
 class OrderItem(models.Model):
-    order = models.ForeignKey(order, related_name='items', on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
     food = models.ForeignKey(FoodItem, related_name='order_items', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
