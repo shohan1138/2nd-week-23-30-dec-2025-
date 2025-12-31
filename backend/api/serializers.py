@@ -17,10 +17,19 @@ class MealPlanSerializer(serializers.ModelSerializer):
         model = MealPlan
         fields = "__all__"
 class OrderItemSerializer(serializers.ModelSerializer):
-    food = FoodItemSerializer(read_only=True)
     class Meta:
         model = OrderItem
         fields = "__all__"
+
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Quantity must be greater than 0")
+        return value
+    def validate(self, attrs):
+        food=attrs['food']
+        if not food.is_available:
+            raise serializers.ValidationError("This food item is not available")
+        return attrs
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     class Meta:

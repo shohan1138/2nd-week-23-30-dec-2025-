@@ -1,0 +1,6 @@
+1. User registers
+2. User logs in → gets access token
+3. User browses food list
+4. User creates order
+5. User adds order items
+6. System auto calculates total price
