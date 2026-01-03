@@ -1,5 +1,19 @@
+import datetime
 from django.db import models
 from django.contrib.auth.models import User
+import random
+from django.utils import timezone
+from datetime import timedelta
+
+class EmailOTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(default=timezone.now() + timedelta(minutes=2))
+    is_used = models.BooleanField(default=False)
+
+    
+
 
 class FoodCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -33,7 +47,7 @@ class MealPlan(models.Model):
         return self.title
 class Order(models.Model):
     user =models.ForeignKey(User, related_name='Orders', on_delete=models.CASCADE)
-    total_price = models.DecimalField(max_digits=8, decimal_places=2)
+    total_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     status = models.CharField(
         max_length=50, 
         choices=[
