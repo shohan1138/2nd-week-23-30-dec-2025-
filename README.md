@@ -85,90 +85,101 @@ Copy code
 
 ---
 
-### 🔑 3. Login & Authentication Journey
+🔑 3. Login & Authentication Journey
+▶ Step 3: User Logs In
 
-**Step 3: User Logs In**
+Endpoint
 
-User submits:
-
-- `email`
-- `password`
-
-**API Endpoint**
 POST /api/login/
 
-pgsql
-Copy code
+Request Body
 
-**Checks Performed**
-
-- Email exists
-- Password is correct
-- Account is OTP verified
-
-**Success Response**
-
-````json
 {
-  "refresh": "xxxxx",
-  "access": "xxxxx"
+"email": "user@example.com",
+"password": "strongpassword"
 }
-✅ User receives JWT tokens and can access protected APIs
+
+Success Response
+
+{
+"refresh": "xxxxx",
+"access": "xxxxx"
+}
+
+Result
+
+✅ User receives JWT tokens
+
+✅ Can access protected APIs
 
 🍽️ 4. Food Browsing Journey
-Step 4: View Food Categories
+▶ Step 4: View Food Categories
 
-bash
-Copy code
+Endpoint
+
 GET /api/food-categories/
-Accessible by:
 
-Anonymous users
+Access Level
 
-Authenticated users
+🌐 Anonymous users
 
-Step 5: View Food Items
+🔐 Authenticated users
 
-bash
-Copy code
+▶ Step 5: View Food Items
+
+Endpoint
+
 GET /api/food-items/
+
 Admin Capabilities
 Only admin users can:
 
-Create
+➕ Create food categories & items
 
-Update
+✏️ Update food categories & items
 
-Delete food categories and food items
+❌ Delete food categories & items
 
 📅 5. Meal Plan Journey
-Step 6: Create Meal Plan
+▶ Step 6: Create Meal Plan
 
-bash
-Copy code
+Endpoint
+
 POST /api/mealplans/
-Meal Plan contains:
+
+Request Body
+
+{
+"title": "Weekly Diet Plan",
+"food_items": [1, 3, 5]
+}
+
+Meal Plan Contains
 
 Title
 
 Multiple food items
 
-Associated user
+Associated authenticated user
 
-Step 7: Retrieve Meal Plan
+▶ Step 7: Retrieve Meal Plan
 
-bash
-Copy code
+Endpoint
+
 GET /api/mealplans/{id}/
+
+Result
+
 ✅ Users can organize meals for planning purposes
 
 🛒 6. Order Creation Journey
-Step 8: Create Order
+▶ Step 8: Create Order
 
-bash
-Copy code
+Endpoint
+
 POST /api/orders/
-Order properties:
+
+Order Properties
 
 Linked to authenticated user
 
@@ -176,74 +187,112 @@ Initial status: pending
 
 total_price calculated automatically
 
-📦 7. Order Item Journey
-Step 9: Add Items to Order
+Sample Response
 
-bash
-Copy code
+{
+"id": 12,
+"status": "pending",
+"total_price": "850.00"
+}
+
+📦 7. Order Item Journey
+▶ Step 9: Add Items to Order
+
+Endpoint
+
 POST /api/order-items/
+
+Request Body
+
+{
+"order": 12,
+"food": 3,
+"quantity": 2
+}
+
 Validation Rules
 
-Quantity must be greater than 0
+Quantity > 0
 
 Food item must be available
 
-Price calculated automatically (food.price × quantity)
+Price auto-calculated
+(food.price × quantity)
 
 💳 8. Payment Journey
-Step 10: Pay for Order
+▶ Step 10: Pay for Order
 
-bash
-Copy code
+Endpoint
+
 PATCH /api/orders/{id}/pay/
+
 Outcome
 
-nginx
-Copy code
 pending → paid
+
+Rule
+
+Only the order owner can pay
+
 ❌ 9. Order Cancellation Journey
-Step 11: Cancel Order
+▶ Step 11: Cancel Order
 
-bash
-Copy code
+Endpoint
+
 PATCH /api/orders/{id}/cancel/
-Rules:
 
-Only the order owner can cancel
+Rules
 
-Paid orders cannot be canceled again
+Only order owner can cancel
+
+Paid orders ❌ cannot be canceled again
 
 🧑‍💼 10. Admin Order Management
-Step 12: Update Order Status (Admin)
+▶ Step 12: Update Order Status (Admin Only)
 
-bash
-Copy code
+Endpoint
+
 PATCH /api/orders/{id}/status/
-Admin can set:
+
+Request Body
+
+{
+"status": "paid"
+}
+
+Admin Can Set
 
 paid
 
 canceled
 
 🔒 11. Authorization & Security
-JWT-based authentication
 
-Role-based access control:
+Authentication
 
-Admin
+JWT-based authentication (SimpleJWT)
 
-Authenticated user
+Role-Based Access
 
-Public (read-only)
+👑 Admin
 
-Custom permission:
+👤 Authenticated User
+
+🌐 Public (read-only)
+
+Custom Permission
 
 IsAdminOrReadOnly
 
 🧪 12. Testing & Quality Assurance
-Testing framework: pytest, pytest-django
 
-Covered areas:
+Frameworks
+
+pytest
+
+pytest-django
+
+Covered Areas
 
 Registration & OTP verification
 
@@ -255,39 +304,36 @@ Permissions
 
 Order & payment flow
 
-Current test coverage: ~92%
+Test Coverage
 
-```bash
 pytest --cov=api --cov-report=term-missing
 pytest --cov=api --cov-report=html
 
-## 🛠 Tech Stack
+Current Coverage
+✅ ~92%
 
-- Python 3.13
-- Django 6.0
-- Django REST Framework
-- SimpleJWT
-- drf-spectacular (Swagger)
-- Pytest + pytest-django
+🛠 Tech Stack
 
----
+Python 3.13
 
-## 📚 API Documentation
+Django 6.0
 
-Swagger UI available at:
+Django REST Framework
+
+SimpleJWT
+
+drf-spectacular (Swagger)
+
+Pytest + pytest-django
+
+📚 API Documentation
+
+Swagger UI
 
 http://127.0.0.1:8000/api/docs/
 
-yaml
-Copy code
-
----
-
-
 ⚙️ Setup Instructions
-bash
-Copy code
-git clone <https://github.com/shohan1138/2nd-week-23-30-dec-2025-.git>
+git clone https://github.com/shohan1138/2nd-week-23-30-dec-2025-.git
 cd backend
 python -m venv env
 env\Scripts\activate
@@ -296,9 +342,9 @@ python manage.py migrate
 python manage.py runserver
 
 📌 Project Status
-Week-1: Authentication & OTP ✅
 
-Week-2: Core APIs & testing ✅
+✅ Week-1: Authentication & OTP
 
-Deployment: Pending
-````
+✅ Week-2: Core APIs & Testing
+
+🚀 Deployment: Pending
