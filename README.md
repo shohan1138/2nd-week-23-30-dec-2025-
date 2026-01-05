@@ -1,73 +1,72 @@
 # DietFood Backend API
 
-A Django REST Framework backend for a food ordering system with
-authentication, OTP verification, order management, and payment status handling.
+A Django REST Framework backend for a food ordering system with authentication, OTP verification, meal planning, order management, and payment handling.
 
 ---
 
 ## 🚀 Features
 
 - User registration with email OTP verification
-- JWT authentication (login)
+- JWT-based authentication (login)
 - Food category & food item management
-- Meal plan APIs
+- Meal plan creation and retrieval
 - Order & order item handling
 - Order payment and cancellation flow
 - Swagger API documentation
-- Pytest-based test coverage
+- Pytest-based automated testing with high coverage
 
 ---
 
 ## 🧭 User Journey (End-to-End API Flow)
 
-This section describes how a user interacts with the system from registration to order completion.
+This section explains how a user interacts with the system from registration to order completion.
 
 ---
 
-### 👤 1. User Registration Journey
+## 👤 1. User Registration
 
-**Step 1: User Registers**
+### Register User
 
-User submits:
+**Endpoint**
 
-- `username`
-- `email`
-- `password`
-- `confirm_password`
-
-**API Endpoint**
+```
 POST /api/register/
+```
 
-markdown
-Copy code
+**Request Fields**
 
-**Internal Process**
+- username
+- email
+- password
+- confirm_password
+
+**Internal Flow**
 
 - User is created with `is_active = False`
 - A 6-digit OTP is generated
 - OTP is saved in `EmailOTP` model:
-  - expiry time: 2 minutes
+  - expires in 2 minutes
   - `is_used = False`
-- OTP is sent to user email
+- OTP is sent to the user’s email
 
 ✅ User is registered but cannot log in yet
 
 ---
 
-### 🔐 2. OTP Verification Journey
+## 🔐 2. OTP Verification
 
-**Step 2: User Verifies OTP**
+### Verify OTP
 
-User submits:
+**Endpoint**
 
-- `email`
-- `otp`
-
-**API Endpoint**
+```
 POST /api/verify-otp/
+```
 
-markdown
-Copy code
+**Request Fields**
+
+- email
+- otp
 
 **Validation Rules**
 
@@ -76,7 +75,7 @@ Copy code
 - OTP must not be expired
 - OTP must not be already used
 
-**Success Outcome**
+**Success Result**
 
 - OTP marked as `is_used = True`
 - User account activated (`is_active = True`)
@@ -85,254 +84,289 @@ Copy code
 
 ---
 
-🔑 3. Login & Authentication Journey
-▶ Step 3: User Logs In
+## 🔑 3. Login & Authentication
 
-Endpoint
+### Login User
 
+**Endpoint**
+
+```
 POST /api/login/
+```
 
-Request Body
+**Request Body**
 
+```json
 {
-"email": "user@example.com",
-"password": "strongpassword"
+  "email": "user@example.com",
+  "password": "strongpassword"
 }
+```
 
-Success Response
+**Response**
 
+```json
 {
-"refresh": "xxxxx",
-"access": "xxxxx"
+  "refresh": "xxxxx",
+  "access": "xxxxx"
 }
+```
 
-Result
+✅ User receives JWT tokens and can access protected APIs
 
-✅ User receives JWT tokens
+---
 
-✅ Can access protected APIs
+## 🍽️ 4. Food Browsing
 
-🍽️ 4. Food Browsing Journey
-▶ Step 4: View Food Categories
+### View Food Categories
 
-Endpoint
+**Endpoint**
 
+```
 GET /api/food-categories/
+```
 
-Access Level
+**Access**
 
-🌐 Anonymous users
+- Public
+- Authenticated users
 
-🔐 Authenticated users
+### View Food Items
 
-▶ Step 5: View Food Items
+**Endpoint**
 
-Endpoint
-
+```
 GET /api/food-items/
+```
 
-Admin Capabilities
-Only admin users can:
+**Admin Permissions**
+Only admins can:
 
-➕ Create food categories & items
+- Create food categories and items
+- Update food categories and items
+- Delete food categories and items
 
-✏️ Update food categories & items
+---
 
-❌ Delete food categories & items
+## 📅 5. Meal Plan
 
-📅 5. Meal Plan Journey
-▶ Step 6: Create Meal Plan
+### Create Meal Plan
 
-Endpoint
+**Endpoint**
 
+```
 POST /api/mealplans/
+```
 
-Request Body
+**Request Body**
 
+```json
 {
-"title": "Weekly Diet Plan",
-"food_items": [1, 3, 5]
+  "title": "Weekly Diet Plan",
+  "food_items": [1, 3, 5]
 }
+```
 
-Meal Plan Contains
+**Meal Plan Includes**
 
-Title
+- Title
+- Multiple food items
+- Linked to authenticated user
 
-Multiple food items
+### Retrieve Meal Plan
 
-Associated authenticated user
+**Endpoint**
 
-▶ Step 7: Retrieve Meal Plan
-
-Endpoint
-
+```
 GET /api/mealplans/{id}/
-
-Result
+```
 
 ✅ Users can organize meals for planning purposes
 
-🛒 6. Order Creation Journey
-▶ Step 8: Create Order
+---
 
-Endpoint
+## 🛒 6. Order Creation
 
+### Create Order
+
+**Endpoint**
+
+```
 POST /api/orders/
+```
 
-Order Properties
+**Order Properties**
 
-Linked to authenticated user
+- Linked to authenticated user
+- Initial status: `pending`
+- `total_price` calculated automatically
 
-Initial status: pending
+**Sample Response**
 
-total_price calculated automatically
-
-Sample Response
-
+```json
 {
-"id": 12,
-"status": "pending",
-"total_price": "850.00"
+  "id": 12,
+  "status": "pending",
+  "total_price": "850.00"
 }
+```
 
-📦 7. Order Item Journey
-▶ Step 9: Add Items to Order
+---
 
-Endpoint
+## 📦 7. Order Items
 
+### Add Item to Order
+
+**Endpoint**
+
+```
 POST /api/order-items/
+```
 
-Request Body
+**Request Body**
 
+```json
 {
-"order": 12,
-"food": 3,
-"quantity": 2
+  "order": 12,
+  "food": 3,
+  "quantity": 2
 }
+```
 
-Validation Rules
+**Validation Rules**
 
-Quantity > 0
+- Quantity must be greater than 0
+- Food item must be available
+- Price calculated automatically (`food.price × quantity`)
 
-Food item must be available
+---
 
-Price auto-calculated
-(food.price × quantity)
+## 💳 8. Payment
 
-💳 8. Payment Journey
-▶ Step 10: Pay for Order
+### Pay for Order
 
-Endpoint
+**Endpoint**
 
+```
 PATCH /api/orders/{id}/pay/
+```
 
-Outcome
+**Result**
 
+```
 pending → paid
+```
 
-Rule
+**Rule**
 
-Only the order owner can pay
+- Only the order owner can pay
 
-❌ 9. Order Cancellation Journey
-▶ Step 11: Cancel Order
+---
 
-Endpoint
+## ❌ 9. Order Cancellation
 
+### Cancel Order
+
+**Endpoint**
+
+```
 PATCH /api/orders/{id}/cancel/
+```
 
-Rules
+**Rules**
 
-Only order owner can cancel
+- Only the order owner can cancel
+- Paid orders cannot be canceled again
 
-Paid orders ❌ cannot be canceled again
+---
 
-🧑‍💼 10. Admin Order Management
-▶ Step 12: Update Order Status (Admin Only)
+## 🧑‍💼 10. Admin Order Management
 
-Endpoint
+### Update Order Status (Admin Only)
 
+**Endpoint**
+
+```
 PATCH /api/orders/{id}/status/
+```
 
-Request Body
+**Request Body**
 
+```json
 {
-"status": "paid"
+  "status": "paid"
 }
+```
 
-Admin Can Set
+**Allowed Status Values**
 
-paid
+- paid
+- canceled
 
-canceled
+---
 
-🔒 11. Authorization & Security
+## 🔒 11. Authorization & Security
 
-Authentication
+- JWT-based authentication (SimpleJWT)
+- Role-based access control:
+  - Admin
+  - Authenticated User
+  - Public (read-only)
+- Custom permission:
+  - `IsAdminOrReadOnly`
 
-JWT-based authentication (SimpleJWT)
+---
 
-Role-Based Access
+## 🧪 12. Testing & Quality Assurance
 
-👑 Admin
+**Frameworks**
 
-👤 Authenticated User
+- pytest
+- pytest-django
 
-🌐 Public (read-only)
+**Covered Areas**
 
-Custom Permission
+- Registration & OTP verification
+- Login & authentication
+- CRUD operations
+- Permissions
+- Order & payment flow
 
-IsAdminOrReadOnly
+**Run Tests & Coverage**
 
-🧪 12. Testing & Quality Assurance
-
-Frameworks
-
-pytest
-
-pytest-django
-
-Covered Areas
-
-Registration & OTP verification
-
-Login & authentication
-
-CRUD operations
-
-Permissions
-
-Order & payment flow
-
-Test Coverage
-
+```bash
 pytest --cov=api --cov-report=term-missing
 pytest --cov=api --cov-report=html
+```
 
-Current Coverage
-✅ ~92%
+✅ Current coverage: ~92%
 
-🛠 Tech Stack
+---
 
-Python 3.13
+## 🛠 Tech Stack
 
-Django 6.0
+- Python 3.13
+- Django 6.0
+- Django REST Framework
+- SimpleJWT
+- drf-spectacular (Swagger)
+- Pytest + pytest-django
 
-Django REST Framework
+---
 
-SimpleJWT
+## 📚 API Documentation
 
-drf-spectacular (Swagger)
+Swagger UI:
 
-Pytest + pytest-django
-
-📚 API Documentation
-
-Swagger UI
-
+```
 http://127.0.0.1:8000/api/docs/
+```
 
-⚙️ Setup Instructions
+---
+
+## ⚙️ Setup Instructions
+
+```bash
 git clone https://github.com/shohan1138/2nd-week-23-30-dec-2025-.git
 cd backend
 python -m venv env
@@ -340,11 +374,12 @@ env\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
+```
 
-📌 Project Status
+---
 
-✅ Week-1: Authentication & OTP
+## 📌 Project Status
 
-✅ Week-2: Core APIs & Testing
-
-🚀 Deployment: Pending
+- ✅ Week-1: Authentication & OTP
+- ✅ Week-2: Core APIs & Testing
+- 🚀 Deployment: Pending
