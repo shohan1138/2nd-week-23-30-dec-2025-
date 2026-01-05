@@ -1,4 +1,4 @@
-# Food Ordering Backend API
+# DietFood Backend API
 
 A Django REST Framework backend for a food ordering system with
 authentication, OTP verification, order management, and payment status handling.
