@@ -1,6 +1,7 @@
+
 from django.urls import path
-from .views import FoodCategoryDetail, FoodCategoryList, FoodItemList, MealPlanList, OrderList, OrderItemList, ordercancel, orderdetail, orderstatusupdate, VerifyOTPView, payorder
-from api.views import LoginView
+from .views import FoodCategoryDetail, FoodCategoryList, FoodItemList, MealPlanList, OrderList, OrderItemList, ordercancel, orderdetail, orderstatusupdate, VerifyOTPView, LoginView, payorder
+
 
 urlpatterns = [
     path("verify-otp/", VerifyOTPView.as_view(), name="verify-otp"),
@@ -14,8 +15,8 @@ urlpatterns = [
     path('mealplans/', MealPlanList.as_view(), name='mealplan-list'),
     path('mealplans/<int:pk>/', MealPlanList.as_view(), name='mealplan-detail'),
 
-    path('orders/', OrderList.as_view()),
-    path('orders/<int:pk>/', OrderList.as_view()),
+    path('orders/', OrderList.as_view(),name='order-list'),
+    path('orders/<int:pk>/', OrderList.as_view(), name='order-detail'),
 
     path('order-items/', OrderItemList.as_view()),
     path('order-items/<int:pk>/', OrderItemList.as_view()),

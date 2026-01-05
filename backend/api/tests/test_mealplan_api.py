@@ -7,7 +7,7 @@ from api.models import MealPlan
 client = APIClient()
 
 @pytest.mark.django_db
-def test_mealplan_retrieve():
+def test_mealplan_retrieve_authenticated():
     user = User.objects.create_user(
         username="mealuser",
         password="pass123"

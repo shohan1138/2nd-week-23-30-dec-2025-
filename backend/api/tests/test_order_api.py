@@ -18,3 +18,10 @@ def test_mealplan_retrieve():
 
     assert response.status_code == 200
     assert response.data["title"] == "Weekly Plan"
+
+@pytest.mark.django_db
+def test_order_list_unauthorized():
+    client = APIClient()
+    url = reverse("order-list")
+    response = client.get(url)
+    assert response.status_code in [401, 403]

@@ -12,9 +12,6 @@ class EmailOTP(models.Model):
     expires_at = models.DateTimeField(default=timezone.now() + timedelta(minutes=2))
     is_used = models.BooleanField(default=False)
 
-    
-
-
 class FoodCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)

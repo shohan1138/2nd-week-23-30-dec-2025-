@@ -1,7 +1,8 @@
 from rest_framework import generics
 from .models import FoodCategory, FoodItem, MealPlan, Order, OrderItem, EmailOTP
 from .serializers import FoodCategorySerializer, FoodItemSerializer,MealPlanSerializer, OrderSerializer, OrderItemSerializer, UserSerializer, VerifyOTPSerializer, LoginSerializer
-from rest_framework.permissions import AllowAny,IsAuthenticated, IsAdminUser
+from rest_framework.permissions import AllowAny,IsAuthenticated, IsAdminUser 
+from api.permissions import IsAdminOrReadOnly
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,8 +16,12 @@ from django.conf import settings
 import random
 from django.core.mail import send_mail
 from api.models import EmailOTP
+from rest_framework.viewsets import ModelViewSet
 
-
+class FoodCategoryViewSet(ModelViewSet):
+    queryset = FoodCategory.objects.all()
+    serializer_class = FoodCategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 class ISAdminOrReadOnly(IsAdminUser):
     def has_permission(self, request, view):
