@@ -15,29 +15,40 @@ class FoodItemSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class MealPlanSerializer(serializers.ModelSerializer):
-    foods = FoodItemSerializer(many=True, read_only=True)
+    foods = serializers.PrimaryKeyRelatedField(
+        queryset=FoodItem.objects.all(),
+        many=True
+    )
+
     class Meta:
         model = MealPlan
-        fields = "__all__"
+        fields = ['id', 'title', 'foods', 'created_at']
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = "__all__"
+        fields = ['id', 'order', 'food', 'quantity', 'price']
+        read_only_fields = ['price']
+
+
 
     def validate_quantity(self, value):
         if value <= 0:
             raise serializers.ValidationError("Quantity must be greater than 0")
         return value
     def validate(self, attrs):
+        
         food=attrs['food']
         if not food.is_available:
             raise serializers.ValidationError("This food item is not available")
         return attrs
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Order
-        fields = "__all__"
+        fields = ['id', 'user', 'total_price', 'status', 'items']
+        read_only_fields = ['id', 'user', 'total_price', 'status', 'items']
 
 class UserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
@@ -55,6 +66,7 @@ class UserSerializer(serializers.ModelSerializer):
         return data
     def create(self, validated_data):
         validated_data.pop('confirm_password')
+        User.objects.filter(email=validated_data['email'], is_active=False).delete()
         user =User.objects.create_user(**validated_data)
         user.is_active = False
         user.save()

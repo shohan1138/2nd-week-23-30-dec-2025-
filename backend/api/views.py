@@ -18,16 +18,17 @@ from django.core.mail import send_mail
 from api.models import EmailOTP
 from rest_framework.viewsets import ModelViewSet
 
-class FoodCategoryViewSet(ModelViewSet):
-    queryset = FoodCategory.objects.all()
-    serializer_class = FoodCategorySerializer
-    permission_classes = [IsAdminOrReadOnly]
 
 class ISAdminOrReadOnly(IsAdminUser):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
         return request.user.is_staff
+class FoodCategoryViewSet(ModelViewSet):
+    queryset = FoodCategory.objects.all()
+    serializer_class = FoodCategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
+
 class FoodCategoryList(generics.ListCreateAPIView):
     queryset = FoodCategory.objects.all().order_by('id')
     serializer_class = FoodCategorySerializer
@@ -49,29 +50,31 @@ class FoodItemList(generics.ListCreateAPIView):
         return [AllowAny()]
 
 
-class MealPlanList(generics.RetrieveUpdateDestroyAPIView):
-    queryset = MealPlan.objects.all()
+class MealPlanList(generics.ListCreateAPIView):
     serializer_class = MealPlanSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return MealPlan.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class OrderList(generics.ListCreateAPIView):
+    # queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user= self.request.user
-        if user.is_staff:
+        if self.request.user.is_staff:
             return Order.objects.all()
-        return Order.objects.filter(user=user)
+        return Order.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        order = serializer.save(user=self.request.user)
-        total = sum(
-            item.food.price * item.quantity
-            for item in order.items.all()
+        serializer.save(
+            status='pending',
+            total_price=0
         )
-        order.total_price = total
-        order.save()
 
 
 class OrderItemList(generics.ListCreateAPIView):
@@ -86,7 +89,10 @@ class OrderItemList(generics.ListCreateAPIView):
         quantity = serializer.validated_data['quantity']
         price = food.price * quantity
 
-        serializer.save(price=price)
+        order_item = serializer.save(price=price)
+        order =order_item.order
+        order.total_price += price
+        order.save()
 
 class orderstatusupdate(APIView):
     permission_classes = [IsAdminUser]
@@ -141,6 +147,7 @@ class createUserView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = serializer.save()
         otp = str(random.randint(100000, 999999))
+        EmailOTP.objects.filter(user=user).delete()
         EmailOTP.objects.create(
             user=user,
             otp_code=otp,
@@ -167,8 +174,18 @@ class VerifyOTPView(APIView):
 
             try:
                 user = User.objects.get(email=email)
-                otp_entry = EmailOTP.objects.get(user=user, otp_code=otp_code, is_used=False)
+                otp_entry = (
+                    EmailOTP.objects
+                    .filter(user=user, otp_code=otp_code, is_used=False)
+                    .order_by('-created_at')
+                    .first()
+                )
 
+                if not otp_entry:
+                    return Response(
+                        {"detail": "Invalid OTP."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
                 if otp_entry.expires_at < timezone.now():
                     return Response({"detail": "OTP has expired."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -201,12 +218,12 @@ class LoginView(APIView):
                 {"detail": "Invalid credentials."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
-        if not EmailOTP.objects.filter(user=user, is_used=True).exists():
-            return Response(
-                {"detail": "Account not verified."},
-                status=status.HTTP_403_FORBIDDEN
-            )
+        if not user.is_staff:
+            if not EmailOTP.objects.filter(user=user, is_used=True).exists():
+                return Response(
+                    {"detail": "Account not verified."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         user = authenticate(username=user.username, password=password)
         if not user:
