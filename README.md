@@ -367,7 +367,7 @@ http://127.0.0.1:8000/api/docs/
 ## ⚙️ Setup Instructions
 
 ```bash
-git clone https://github.com/shohan1138/2nd-week-23-30-dec-2025-
+git clone https://github.com/shohan1138/2nd-week-23-30-dec-2025-.git
 cd backend
 python -m venv env
 env\Scripts\activate
