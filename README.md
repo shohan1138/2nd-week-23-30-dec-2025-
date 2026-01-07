@@ -30,7 +30,7 @@ This section explains how a user interacts with the system from registration to 
 **Endpoint**
 
 ```
-POST /api/register/
+POST http://127.0.0.1:8000/api/user/register/
 ```
 
 **Request Fields**
@@ -60,7 +60,7 @@ POST /api/register/
 **Endpoint**
 
 ```
-POST /api/verify-otp/
+POST http://127.0.0.1:8000/verify-otp/
 ```
 
 **Request Fields**
@@ -91,7 +91,7 @@ POST /api/verify-otp/
 **Endpoint**
 
 ```
-POST /api/login/
+POST http://127.0.0.1:8000/login/
 ```
 
 **Request Body**
